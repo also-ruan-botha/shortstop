@@ -1,0 +1,32 @@
+package com.shortstop.blocker
+
+import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.junit4.createAndroidComposeRule
+import androidx.compose.ui.test.onNodeWithText
+import androidx.test.ext.junit.runners.AndroidJUnit4
+import androidx.test.platform.app.InstrumentationRegistry
+import androidx.test.uiautomator.By
+import androidx.test.uiautomator.UiDevice
+import androidx.test.uiautomator.Until
+import org.junit.Assert.assertNotNull
+import org.junit.Rule
+import org.junit.Test
+import org.junit.runner.RunWith
+
+@RunWith(AndroidJUnit4::class)
+class MainActivityTest {
+    @get:Rule val composeRule = createAndroidComposeRule<MainActivity>()
+
+    @Test
+    fun phaseZeroShellIsVisibleAndForeground() {
+        composeRule.onNodeWithText("ShortStop").assertIsDisplayed()
+        composeRule.onNodeWithText("Phase 0 ready").assertIsDisplayed()
+        composeRule
+            .onNodeWithText("Shorts blocking is not active yet.", substring = true)
+            .assertIsDisplayed()
+
+        val device = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation())
+        val app = device.wait(Until.findObject(By.pkg("com.shortstop.blocker.debug")), 5_000)
+        assertNotNull(app)
+    }
+}
