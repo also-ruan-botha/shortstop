@@ -3,12 +3,17 @@
 This guide uses Android CLI, the Gradle wrapper, and `adb`; Android Studio is
 not required.
 
-## What the Phase 0 app does
+## What the Phase 1 app does
 
-The current app is an installation-ready shell. When opened, it displays
-**ShortStop**, **Phase 0 ready**, and a notice that Shorts blocking is not active
-yet. It does not declare an accessibility service, inspect YouTube, or perform
-Back actions. Those behaviors begin in later implementation phases.
+The current app presents the accessibility disclosure and requires an explicit
+acknowledgement before it can open Android Accessibility Settings. After setup,
+it reports whether the service is disabled, enabled, or paused, and provides a
+persistent pause control plus instructions for disabling access.
+
+The declared service receives only window-state and window-content events from
+the official YouTube package. This Phase 1 shell does not inspect accessibility
+nodes or perform Back actions. Those behaviors remain behind the discovery,
+detector, and action-state-machine gates in the implementation plan.
 
 ## 1. Verify the toolchain and device
 
@@ -87,9 +92,26 @@ If more than one device is connected, pass `-s <serial>` to `adb`, or
 ./gradlew connectedDebugAndroidTest
 ```
 
-The test launches the activity and verifies the Phase 0 text using Compose Test
-and UI Automator. Emulator startup is not managed by this task; start or connect
-the device first.
+The test launches the activity and verifies that the prominent disclosure is
+visible and the Accessibility Settings button is disabled until acknowledgement.
+It also confirms the application is foregrounded using UI Automator. Emulator
+startup is not managed by this task; start or connect the device first.
+
+## 6. Verify the Phase 1 flow manually
+
+1. Start from a clean install and confirm the settings button is initially
+   disabled.
+2. Read and select the acknowledgement, then open Accessibility Settings.
+3. Enable ShortStop manually and return to the app. Confirm the status changes
+   to **ShortStop is enabled**.
+4. Turn on **Pause ShortStop**, restart the app, and confirm the paused state is
+   retained. Resume it and confirm enabled status returns.
+5. Open Accessibility Settings from the status screen, disable ShortStop, and
+   return. Confirm the app reports that access is off.
+6. Repeat the UI review in light and dark theme, portrait and landscape, and at
+   the largest supported display and font settings.
+7. Open YouTube and confirm this Phase 1 build never presses Back or otherwise
+   navigates, whether ShortStop is enabled or paused.
 
 ## Useful commands
 
@@ -107,8 +129,9 @@ adb shell am force-stop com.shortstop.blocker.debug
 adb uninstall com.shortstop.blocker.debug
 ```
 
-Uninstalling is destructive to the app's local settings. The current Phase 0
-shell has no user settings yet.
+Uninstalling is destructive to the saved onboarding acknowledgement and pause
+state. Android may retain or clear the separately managed accessibility-service
+setting depending on device behavior; verify it after reinstalling.
 
 ## Troubleshooting
 

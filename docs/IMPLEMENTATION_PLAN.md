@@ -33,17 +33,13 @@ The prototype succeeds when it:
 
 ## Phase 0: environment and scaffold
 
-Status as of 6 September 2026:
+Status as of 7 September 2026:
 
 - complete: single-module Compose scaffold, version catalog, debug/release
   build types, local and instrumented test source sets, Gradle wrapper,
-  formatting, lint, test, build, installation, and launch commands;
-- verified: Gradle configuration and `spotlessCheck` with JDK 17; and
-- pending: Android SDK visibility in the build shell, `assembleDebug`, local
-  unit tests, installation, launch, and the connected device test.
-
-The pending checks form the Phase 0 exit gate and must be completed after the
-SDK and emulator or physical device are available.
+  formatting, lint, test, build, installation, and launch commands; and
+- verified by the project owner: the app builds, installs, launches, and passes
+  the Phase 0 local and instrumented test gate.
 
 1. Complete [the Android development setup guide](ANDROID_SETUP_UBUNTU.md)
    using the local or remote command-line path appropriate for the host.
@@ -59,6 +55,12 @@ Exit gate: the empty app builds, installs, launches, and runs one local and one
 instrumented test.
 
 ## Phase 1: onboarding and service shell
+
+Implementation status as of 7 September 2026: implemented in the repository;
+the device-review exit gate remains to be run. The service is intentionally
+inert in this phase: it accepts only configured YouTube events, observes the
+persisted pause preference, and neither reads a node tree nor performs an
+accessibility action.
 
 1. Add an onboarding screen explaining:
    - what ShortStop observes;
@@ -82,6 +84,11 @@ instrumented test.
 Exit gate: the user can understand, enable, pause, resume, and disable the
 service, but it performs no navigation action yet. The UI also passes Material
 3 and accessibility review for the supported phone configurations.
+
+Device verification must cover the first-run acknowledgement gate, return from
+Accessibility Settings, live enabled/disabled refresh, pause persistence,
+light/dark theme, large text, portrait, and landscape before Phase 1 is marked
+complete.
 
 ## Phase 2: safe discovery tooling
 

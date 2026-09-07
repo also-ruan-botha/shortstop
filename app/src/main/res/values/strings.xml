@@ -1,4 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">ShortStop</string>
+    <string name="accessibility_service_label">ShortStop</string>
+    <string name="accessibility_service_description">Recognizes the Shorts interface in the official YouTube app so ShortStop can leave it. Processing stays on your device.</string>
 </resources>

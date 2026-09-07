@@ -15,9 +15,10 @@ an Android application. For ShortStop, the preferred alternative is:
   discovery and end-to-end testing; and
 - optionally, `scrcpy` for viewing and controlling that device from the desktop.
 
-This repository remains documentation-only. Do not install dependencies or
-scaffold the application until implementation is explicitly approved, as
-required by [AGENTS.md](../AGENTS.md).
+Implementation through the Phase 1 service shell has been approved. Dependency
+installation and later implementation phases still require their corresponding
+project approval and safety gates, as described in [AGENTS.md](../AGENTS.md)
+and the [implementation plan](IMPLEMENTATION_PLAN.md).
 
 ## Choose a path for the machine
 

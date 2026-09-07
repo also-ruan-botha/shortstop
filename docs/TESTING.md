@@ -30,6 +30,13 @@ ordinary YouTube screens.
 - Scalable text, semantic labels, minimum touch targets, edge-to-edge insets,
   and adaptive layouts at supported display sizes
 
+The Phase 1 automated UI test covers the first-run disclosure and disabled
+acknowledgement control. Its manual device gate additionally covers the system
+Accessibility Settings handoff, enabled-state refresh on foreground return,
+pause/resume persistence, disable instructions, theme variants, large text,
+and rotation. System accessibility consent must remain a manual user action;
+tests must not enable the service through shell commands or hidden APIs.
+
 UI Automator may drive controlled navigation, but tests must tolerate normal
 network loading and must report the installed YouTube version.
 
