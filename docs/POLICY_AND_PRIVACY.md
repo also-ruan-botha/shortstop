@@ -41,12 +41,21 @@ designed around language equivalent to:
 Place this disclosure immediately before the affirmative control that opens
 Accessibility Settings. Do not hide it only in a privacy policy.
 
+The Phase 1 onboarding implements this placement with an unchecked, explicit
+acknowledgement. The system-settings button remains disabled until the user
+selects it. The acknowledgement is then stored locally so returning users can
+open settings from the status screen without repeating onboarding.
+
+Application backup and device-transfer extraction are disabled, so the local
+acknowledgement and pause preference are not copied off the device by Android's
+backup mechanisms.
+
 ## Data inventory
 
 Persisted data is limited to:
 
 - onboarding acknowledgement;
-- paused/enabled preference;
+- pause preference (Android owns the enabled/disabled service state);
 - non-sensitive settings;
 - optional local counters only if later approved and documented.
 

@@ -44,6 +44,12 @@ Responsibilities:
 It persists only settings such as paused state and whether onboarding was
 acknowledged.
 
+In Phase 1, `MainActivity` refreshes the system-owned service-enabled state in
+`onResume`, so returning from Accessibility Settings immediately updates the
+status surface. `UserPreferencesRepository` stores only the onboarding
+acknowledgement and pause state in Preferences DataStore. The disabled state
+takes precedence over paused, and paused takes precedence over detector status.
+
 All application UI follows Material Design 3 guidelines. Screens use Material
 3 components and design tokens for typography, color, shape, spacing, and
 motion. They must support light and dark themes, scalable text, accessible
@@ -65,6 +71,12 @@ Responsibilities:
 
 It must never retain an `AccessibilityNodeInfo` beyond processing the event.
 Recycle nodes where required by the supported Android API behavior.
+
+The Phase 1 implementation is a no-op shell. Its manifest and service metadata
+limit delivery to window-state and window-content events from
+`com.google.android.youtube`; the callback repeats the package and pause gates
+but deliberately performs no node retrieval or global action. Phase 2 adds
+sanitized discovery, and Phase 4 is the first phase permitted to add Back.
 
 ### Sanitized node model
 

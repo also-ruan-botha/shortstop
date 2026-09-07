@@ -1,7 +1,9 @@
 package com.shortstop.blocker
 
 import androidx.compose.ui.test.assertIsDisplayed
-import androidx.compose.ui.test.junit4.createAndroidComposeRule
+import androidx.compose.ui.test.assertIsNotEnabled
+import androidx.compose.ui.test.junit4.v2.createAndroidComposeRule
+import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.onNodeWithText
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
@@ -18,11 +20,15 @@ class MainActivityTest {
     @get:Rule val composeRule = createAndroidComposeRule<MainActivity>()
 
     @Test
-    fun phaseZeroShellIsVisibleAndForeground() {
-        composeRule.onNodeWithText("ShortStop").assertIsDisplayed()
-        composeRule.onNodeWithText("Phase 0 ready").assertIsDisplayed()
+    fun onboardingRequiresAcknowledgementAndAppIsForeground() {
+        composeRule.onNodeWithText("Leave Shorts. Keep YouTube.").assertIsDisplayed()
         composeRule
-            .onNodeWithText("Shorts blocking is not active yet.", substring = true)
+            .onNodeWithText("Continue to Accessibility settings")
+            .performScrollTo()
+            .assertIsDisplayed()
+            .assertIsNotEnabled()
+        composeRule
+            .onNodeWithText("does not capture screenshots", substring = true)
             .assertIsDisplayed()
 
         val device = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation())
