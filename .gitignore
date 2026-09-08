@@ -35,3 +35,6 @@ keystore.properties
 # Operating-system metadata
 .DS_Store
 Thumbs.db
+
+# Screen captures
+captures/

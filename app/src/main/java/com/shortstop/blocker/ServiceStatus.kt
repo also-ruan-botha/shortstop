@@ -8,7 +8,7 @@ internal enum class ServiceStatus(val heading: String, val description: String) 
     ENABLED(
         heading = "ShortStop is enabled",
         description =
-            "The service is connected. This Phase 1 build observes no screen content and performs no navigation actions yet.",
+            "The service is connected. Automatic detection and navigation are not active yet.",
     ),
     PAUSED(
         heading = "ShortStop is paused",

@@ -44,7 +44,7 @@ Responsibilities:
 It persists only settings such as paused state and whether onboarding was
 acknowledged.
 
-In Phase 1, `MainActivity` refreshes the system-owned service-enabled state in
+`MainActivity` refreshes the system-owned service-enabled state in
 `onResume`, so returning from Accessibility Settings immediately updates the
 status surface. `UserPreferencesRepository` stores only the onboarding
 acknowledgement and pause state in Preferences DataStore. The disabled state
@@ -72,11 +72,29 @@ Responsibilities:
 It must never retain an `AccessibilityNodeInfo` beyond processing the event.
 Recycle nodes where required by the supported Android API behavior.
 
-The Phase 1 implementation is a no-op shell. Its manifest and service metadata
-limit delivery to window-state and window-content events from
-`com.google.android.youtube`; the callback repeats the package and pause gates
-but deliberately performs no node retrieval or global action. Phase 2 adds
-sanitized discovery, and Phase 4 is the first phase permitted to add Back.
+The manifest and service metadata limit delivery to window-state and
+window-content events from `com.google.android.youtube`; the callback repeats
+the package and pause gates. In debug builds, an explicitly armed discovery
+bridge may consume the next eligible event and read one tree. In release builds
+that bridge is a no-op. Phase 4 is the first phase permitted to add Back.
+
+### Debug discovery flow
+
+The inspector cannot capture when ShortStop is foregrounded because the active
+root would belong to ShortStop. The developer therefore arms a one-shot capture
+in the debug UI and then switches to the intended YouTube surface. The next
+eligible YouTube event reads one active tree; there is no polling or continuous
+recording.
+
+Traversal is bounded to 1,000 nodes, depth 40, and 100 children per node. A
+capture records whether a limit was reached, recycles framework nodes where the
+Android API requires it, and converts them immediately into the pure sanitized
+model. The framework tree is never retained.
+
+Export is a second explicit action. It writes JSON only to the debug app's
+private `files/debug-fixtures` directory. The debug implementation and UI live
+under the `debug` source set; the `release` source set supplies only a no-op
+bridge and renders no discovery panel.
 
 ### Sanitized node model
 
@@ -87,6 +105,11 @@ The pure model contains only properties necessary for structural detection:
 - selected, clickable, scrollable, and visible flags;
 - tree depth, child count, and structural relationships;
 - optional coarse bounds/layout facts only if proven necessary.
+
+The Phase 2 representation is a flat node list. Stable capture-local indexes
+and `parentIndex` preserve relationships without retaining Android objects.
+Metadata records capture time, package identity, installed YouTube version,
+Android release, and SDK level. It contains no device or account identifier.
 
 Text and content descriptions are excluded from stored fixtures. If a later
 fallback temporarily inspects a content description in memory, it must be

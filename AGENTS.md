@@ -9,6 +9,12 @@ write application code, add binary assets, or install dependencies unless the
 user explicitly approves implementation. Documentation may be corrected or
 refined when requested.
 
+## Source-control boundary
+
+Codex or any other LLM must never run `git add`, `git commit`, `git push`, or `git pull` in this
+repository. Staging, committing, and synchronizing with remotes are always the
+project owner's responsibility.
+
 ## Product boundary
 
 ShortStop is an Android accessibility-based blocker for YouTube Shorts. It

@@ -3,8 +3,8 @@ package com.shortstop.blocker
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.junit4.v2.createAndroidComposeRule
-import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.performScrollTo
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.uiautomator.By
@@ -21,7 +21,10 @@ class MainActivityTest {
 
     @Test
     fun onboardingRequiresAcknowledgementAndAppIsForeground() {
-        composeRule.onNodeWithText("Leave Shorts. Keep YouTube.").assertIsDisplayed()
+        composeRule
+            .onNodeWithText("Leave Shorts. Keep YouTube.")
+            .performScrollTo()
+            .assertIsDisplayed()
         composeRule
             .onNodeWithText("Continue to Accessibility settings")
             .performScrollTo()
@@ -29,6 +32,7 @@ class MainActivityTest {
             .assertIsNotEnabled()
         composeRule
             .onNodeWithText("does not capture screenshots", substring = true)
+            .performScrollTo()
             .assertIsDisplayed()
 
         val device = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation())

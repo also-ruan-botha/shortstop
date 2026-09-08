@@ -3,7 +3,7 @@
 This guide uses Android CLI, the Gradle wrapper, and `adb`; Android Studio is
 not required.
 
-## What the Phase 1 app does
+## What the Phase 2 app does
 
 The current app presents the accessibility disclosure and requires an explicit
 acknowledgement before it can open Android Accessibility Settings. After setup,
@@ -11,9 +11,10 @@ it reports whether the service is disabled, enabled, or paused, and provides a
 persistent pause control plus instructions for disabling access.
 
 The declared service receives only window-state and window-content events from
-the official YouTube package. This Phase 1 shell does not inspect accessibility
-nodes or perform Back actions. Those behaviors remain behind the discovery,
-detector, and action-state-machine gates in the implementation plan.
+the official YouTube package. Debug builds add an explicitly armed, one-shot
+structural inspector. It cannot read text or content descriptions and does not
+record bounds, screenshots, media, or user activity history. Release builds do
+not contain the inspector or export UI. No build performs Back actions yet.
 
 ## 1. Verify the toolchain and device
 
@@ -132,6 +133,37 @@ adb uninstall com.shortstop.blocker.debug
 Uninstalling is destructive to the saved onboarding acknowledgement and pause
 state. Android may retain or clear the separately managed accessibility-service
 setting depending on device behavior; verify it after reinstalling.
+
+## Capture a sanitized Phase 2 fixture
+
+This workflow is available only in a debug build:
+
+1. Enable the ShortStop accessibility service and make sure it is not paused.
+2. In ShortStop, select **Arm one capture** under **Debug discovery**.
+3. Switch to the exact YouTube surface being documented. The next eligible
+   YouTube event captures one bounded structural tree.
+4. Return to ShortStop, review the reported node count and truncation state,
+   then select **Export sanitized fixture**.
+5. List the app-private exports:
+
+   ```bash
+   adb shell run-as com.shortstop.blocker.debug \
+     ls files/debug-fixtures
+   ```
+
+6. Copy a named fixture to the local development machine for review:
+
+   ```bash
+   adb exec-out run-as com.shortstop.blocker.debug \
+     cat files/debug-fixtures/youtube-EXACT_TIMESTAMP.json \
+     > youtube-EXACT_TIMESTAMP.json
+   ```
+
+Before retaining a fixture, inspect it and confirm it contains only the fields
+documented in `ARCHITECTURE.md`. Record whether the surface was Shorts or an
+ordinary YouTube surface separately; the export deliberately does not infer or
+store that label. Capture comparable negative surfaces near every positive
+surface. Never automate accessibility-service enablement for this workflow.
 
 ## Troubleshooting
 

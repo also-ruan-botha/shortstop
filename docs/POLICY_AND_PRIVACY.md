@@ -70,6 +70,14 @@ The prototype must not persist or transmit:
 Do not add the Internet permission to the release manifest. Debug fixture export
 must be manual, sanitized, and absent from release builds.
 
+The Phase 2 inspector is compiled only into debug builds and captures exactly
+one bounded tree after a developer arms it and returns to YouTube. Export is a
+separate developer action and writes only to app-private local storage. Fixtures
+contain structural identifiers, framework class/role, boolean capabilities,
+tree relationships, capture time, YouTube version, and Android version. The
+reader never accesses node text or content descriptions, and it records no
+bounds, screenshots, device identifiers, or account data.
+
 ## YouTube terms and branding
 
 Review the [YouTube Terms of Service](https://www.youtube.com/t/terms) before
