@@ -2,11 +2,12 @@
 
 ShortStop is a native Android prototype that uses an `AccessibilityService` to detect the Shorts interface in the official YouTube app and leave it, while leaving ordinary YouTube playback untouched.
 
-Phase 1 provides the prominent-disclosure onboarding flow, the YouTube-scoped
-accessibility-service shell, persistent pause control, and live service status.
-The service intentionally performs no node inspection or navigation yet;
-discovery, detection, and Back actions are introduced only after their later
-safety gates pass.
+Phase 2 is complete for tested YouTube version `21.35.442`. Its debug-build-only,
+explicitly armed discovery tool produced a sanitized 13-capture evidence set.
+The selected structural fields distinguish completed Shorts viewers from the
+tested ordinary surfaces while safely leaving a Shorts-loading transition
+unknown. Release builds contain no inspector or export UI, and no build performs
+automatic detection or navigation yet.
 
 ## Development commands
 

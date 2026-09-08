@@ -47,6 +47,7 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.lifecycleScope
+import com.shortstop.blocker.discovery.DiscoveryPanel
 import com.shortstop.blocker.ui.theme.ShortStopTheme
 import kotlinx.coroutines.launch
 
@@ -276,6 +277,7 @@ private fun StatusScreen(
                 Text("Enable in Accessibility settings")
             }
         }
+        DiscoveryPanel(serviceEnabled = state.serviceEnabled, paused = state.paused)
         Surface(
             modifier = Modifier.fillMaxWidth(),
             shape = MaterialTheme.shapes.large,

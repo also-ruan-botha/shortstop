@@ -2,6 +2,7 @@ package com.shortstop.blocker
 
 import android.accessibilityservice.AccessibilityService
 import android.view.accessibility.AccessibilityEvent
+import com.shortstop.blocker.discovery.discoveryServiceBridge
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -14,11 +15,13 @@ import kotlinx.coroutines.launch
  */
 class ShortStopAccessibilityService : AccessibilityService() {
     private val serviceScope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
+    private val discoveryBridge = discoveryServiceBridge()
 
     @Volatile private var paused = true
 
     override fun onServiceConnected() {
         super.onServiceConnected()
+        discoveryBridge.onServiceConnected(this)
         serviceScope.launch {
             UserPreferencesRepository(applicationContext).preferences.collect { preferences ->
                 paused = preferences.paused
@@ -30,12 +33,13 @@ class ShortStopAccessibilityService : AccessibilityService() {
     override fun onAccessibilityEvent(event: AccessibilityEvent?) {
         if (paused || event?.packageName?.toString() != YOUTUBE_PACKAGE) return
 
-        // Phase 1 deliberately performs no node inspection and no global action.
+        discoveryBridge.onEligibleYouTubeEvent(this)
     }
 
     override fun onInterrupt() = Unit
 
     override fun onDestroy() {
+        discoveryBridge.onServiceDestroyed(this)
         serviceScope.cancel()
         super.onDestroy()
     }

@@ -19,6 +19,12 @@ Use sanitized fixtures captured through the approved debug workflow. Every new
 positive fixture requires nearby negative fixtures from visually similar
 ordinary YouTube screens.
 
+Phase 2 unit tests verify resource-ID suffix minimization, structural class-to-
+role mapping, parent relationships in exported JSON, and the absence of text,
+content-description, bounds, and screenshot fields. Device review must also
+exercise missing roots, truncation indicators, repeated event bursts after one
+arm action, local export failure, and release-build absence of discovery UI.
+
 ### Instrumented tests
 
 - Accessibility service lifecycle and settings-state detection

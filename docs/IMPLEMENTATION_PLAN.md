@@ -56,11 +56,9 @@ instrumented test.
 
 ## Phase 1: onboarding and service shell
 
-Implementation status as of 7 September 2026: implemented in the repository;
-the device-review exit gate remains to be run. The service is intentionally
-inert in this phase: it accepts only configured YouTube events, observes the
-persisted pause preference, and neither reads a node tree nor performs an
-accessibility action.
+Status as of 7 September 2026: complete and manually verified by the project
+owner. The service accepts only configured YouTube events, observes the
+persisted pause preference, and performs no automatic accessibility action.
 
 1. Add an onboarding screen explaining:
    - what ShortStop observes;
@@ -85,12 +83,22 @@ Exit gate: the user can understand, enable, pause, resume, and disable the
 service, but it performs no navigation action yet. The UI also passes Material
 3 and accessibility review for the supported phone configurations.
 
-Device verification must cover the first-run acknowledgement gate, return from
-Accessibility Settings, live enabled/disabled refresh, pause persistence,
-light/dark theme, large text, portrait, and landscape before Phase 1 is marked
-complete.
+Device verification covered the first-run acknowledgement gate, return from
+Accessibility Settings, live enabled/disabled refresh, pause persistence, and
+the service's no-navigation behavior.
 
 ## Phase 2: safe discovery tooling
+
+Status as of 8 September 2026: complete for tested YouTube version `21.35.442`.
+The debug-only, one-shot inspector and local JSON export are implemented. Two
+required non-textual signal groups distinguish both completed Shorts captures
+from ten negative captures. A separate Shorts-loading capture correctly lacks
+the signature and establishes the required fail-open transition behavior.
+
+The evidence and deliberately rejected signals are recorded in
+[PHASE_2_CAPTURE_ANALYSIS.md](PHASE_2_CAPTURE_ANALYSIS.md). Compatibility is not
+inferred beyond the tested YouTube version, and the negative suite must keep
+expanding before action-capable phases can pass their gates.
 
 1. Build a debug-only inspector that traverses the current YouTube
    accessibility tree after an explicit developer action.
