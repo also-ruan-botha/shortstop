@@ -3,7 +3,7 @@ package com.shortstop.blocker.discovery
 internal object FixtureJsonEncoder {
     fun encode(tree: SanitizedNodeTree): String = buildString {
         appendLine("{")
-        appendLine("  \"schemaVersion\": $SANITIZED_TREE_SCHEMA_VERSION,")
+        appendLine("  \"schemaVersion\": ${tree.schemaVersion},")
         appendLine("  \"capturedAtUtc\": ${tree.metadata.capturedAtUtc.jsonString()},")
         appendLine("  \"targetPackage\": ${tree.metadata.targetPackage.jsonString()},")
         appendLine("  \"targetVersionName\": ${tree.metadata.targetVersionName.jsonString()},")

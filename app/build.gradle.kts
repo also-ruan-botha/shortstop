@@ -45,6 +45,12 @@ android {
     testOptions {
         animationsDisabled = true
     }
+
+    sourceSets
+        .getByName("test")
+        .resources
+        .directories
+        .add(rootProject.file("captures").absolutePath)
 }
 
 dependencies {
