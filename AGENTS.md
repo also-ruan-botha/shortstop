@@ -52,8 +52,10 @@ is optional, not required.
 - Detection is deterministic and rule-based. Do not add OCR, machine learning,
   packet inspection, or remote executable rules.
 - A low-confidence or unknown layout must fail open.
-- At most two Back actions may be issued for one confirmed Shorts encounter;
-  use a cooldown to prevent action loops.
+- Click YouTube's own Home tab, never Android Home or Back, for a confirmed
+  Shorts encounter. Keep the service available for future encounters without a
+  fixed action-count limit, and require a later eligible event plus fresh
+  confirmation before retrying so no polling or action loop is created.
 - Release builds must not log accessibility-node text or content descriptions.
 
 ## Architecture constraints

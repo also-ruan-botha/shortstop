@@ -57,13 +57,12 @@ class ShortsDetectorTest {
     }
 
     @Test
-    fun eachIncompletePositiveSignalStaysPossible() {
+    fun eachMissingCorePositiveSignalStaysPossible() {
         val fixture = CaptureFixtureLoader.load("youtube-shortscreen.json")
         val requiredIds =
             listOf(
                 "reel_recycler",
                 "reel_player_page_container",
-                "reel_playback_loading_spinner",
             )
 
         requiredIds.forEach { removedId ->
@@ -87,6 +86,24 @@ class ShortsDetectorTest {
                 decision.reason,
             )
         }
+    }
+
+    @Test
+    fun transientLoadingSpinnerIsSupportingRatherThanRequiredEvidence() {
+        val fixture = CaptureFixtureLoader.load("youtube-shortscreen.json")
+        val withoutSpinner =
+            fixture.copy(
+                nodes =
+                    fixture.nodes.map { node ->
+                        if (node.resourceIdSuffix == "reel_playback_loading_spinner") {
+                            node.copy(resourceIdSuffix = null)
+                        } else {
+                            node
+                        }
+                    }
+            )
+
+        assertEquals(DetectionResult.CONFIRMED_SHORTS, detector.detect(withoutSpinner).result)
     }
 
     @Test
@@ -203,7 +220,7 @@ class ShortsDetectorTest {
     }
 
     @Test
-    fun unsupportedSchemaPackageAndTargetVersionFailOpen() {
+    fun unsupportedSchemaAndPackageFailOpen() {
         val fixture = CaptureFixtureLoader.load("youtube-shortscreen.json")
 
         assertUnknown(fixture.copy(schemaVersion = 2), DetectionReason.UNSUPPORTED_SCHEMA)
@@ -211,14 +228,53 @@ class ShortsDetectorTest {
             fixture.copy(metadata = fixture.metadata.copy(targetPackage = "example.invalid")),
             DetectionReason.UNSUPPORTED_PACKAGE,
         )
-        assertUnknown(
-            fixture.copy(metadata = fixture.metadata.copy(targetVersionName = "21.36.0")),
-            DetectionReason.UNSUPPORTED_TARGET_VERSION,
-        )
-        assertUnknown(
-            fixture.copy(metadata = fixture.metadata.copy(targetVersionCode = 1L)),
-            DetectionReason.UNSUPPORTED_TARGET_VERSION,
-        )
+    }
+
+    @Test
+    fun youtubeVersionMetadataDoesNotGateACompleteStructuralMatch() {
+        val fixture = CaptureFixtureLoader.load("youtube-shortscreen.json")
+        val versions =
+            listOf(
+                "21.35.443" to 1_561_295_276L,
+                "99.0.0" to 9_999_999_999L,
+                "unknown" to -1L,
+            )
+
+        versions.forEach { (versionName, versionCode) ->
+            val decision =
+                detector.detect(
+                    fixture.copy(
+                        metadata =
+                            fixture.metadata.copy(
+                                targetVersionName = versionName,
+                                targetVersionCode = versionCode,
+                            )
+                    )
+                )
+
+            assertEquals("version=$versionName", DetectionResult.CONFIRMED_SHORTS, decision.result)
+        }
+    }
+
+    @Test
+    fun ordinaryFixturesRemainNonConfirmingOnAnUnobservedVersion() {
+        ORDINARY_FIXTURES.forEach { (fixtureName, expected) ->
+            val fixture = CaptureFixtureLoader.load(fixtureName)
+            val changedVersion =
+                fixture.copy(
+                    metadata =
+                        fixture.metadata.copy(
+                            targetVersionName = "99.0.0",
+                            targetVersionCode = 9_999_999_999L,
+                        )
+                )
+
+            assertEquals(
+                "fixture=$fixtureName",
+                expected,
+                detector.detect(changedVersion).result,
+            )
+        }
     }
 
     @Test

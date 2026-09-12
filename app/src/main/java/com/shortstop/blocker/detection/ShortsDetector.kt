@@ -19,7 +19,6 @@ internal enum class DetectionReason {
     NO_RECOGNIZED_STRUCTURE,
     UNSUPPORTED_PACKAGE,
     UNSUPPORTED_SCHEMA,
-    UNSUPPORTED_TARGET_VERSION,
     AMBIGUOUS_RULE_SELECTION,
     TRUNCATED_TREE,
     MALFORMED_TREE,
@@ -45,24 +44,21 @@ internal data class NodeSignature(
 
 internal data class ShortsRuleSet(
     val ruleVersion: Int,
-    val targetVersionNames: Set<String>,
-    val targetVersionCodes: Set<Long>,
+    val observedTargetVersionNames: Set<String>,
+    val observedTargetVersionCodes: Set<Long>,
     val reelList: NodeSignature,
     val playerPage: NodeSignature,
     val loadingSpinner: NodeSignature,
     val ordinaryPlaybackResourceIds: Set<String>,
-) {
-    fun supports(versionName: String, versionCode: Long): Boolean =
-        versionName in targetVersionNames && versionCode in targetVersionCodes
-}
+)
 
 internal object BundledShortsRules {
     val all: List<ShortsRuleSet> =
         listOf(
             ShortsRuleSet(
                 ruleVersion = 1,
-                targetVersionNames = setOf("21.35.442"),
-                targetVersionCodes = setOf(1_561_295_275L),
+                observedTargetVersionNames = setOf("21.35.442"),
+                observedTargetVersionCodes = setOf(1_561_295_275L),
                 reelList =
                     NodeSignature(
                         resourceIdSuffix = "reel_recycler",
@@ -100,14 +96,8 @@ internal class ShortsDetector(private val ruleSets: List<ShortsRuleSet> = Bundle
         if (tree.truncated) return unknown(DetectionReason.TRUNCATED_TREE)
         if (!tree.isStructurallyValid()) return unknown(DetectionReason.MALFORMED_TREE)
 
-        val matchingRules = ruleSets.filter {
-            it.supports(tree.metadata.targetVersionName, tree.metadata.targetVersionCode)
-        }
-        if (matchingRules.isEmpty()) {
-            return unknown(DetectionReason.UNSUPPORTED_TARGET_VERSION)
-        }
-        if (matchingRules.size > 1) return unknown(DetectionReason.AMBIGUOUS_RULE_SELECTION)
-        val rules = matchingRules.single()
+        if (ruleSets.size != 1) return unknown(DetectionReason.AMBIGUOUS_RULE_SELECTION)
+        val rules = ruleSets.single()
 
         if (tree.nodes.any { it.resourceIdSuffix in rules.ordinaryPlaybackResourceIds }) {
             return DetectionDecision(
@@ -121,9 +111,7 @@ internal class ShortsDetector(private val ruleSets: List<ShortsRuleSet> = Bundle
         val reelLists = tree.nodes.filter(rules.reelList::matches)
         val completeMatches = reelLists.filter { reelList ->
             val directChildren = childrenByParent[reelList.index].orEmpty()
-            val siblings = childrenByParent[reelList.parentIndex].orEmpty()
-            directChildren.any(rules.playerPage::matches) &&
-                siblings.any(rules.loadingSpinner::matches)
+            directChildren.any(rules.playerPage::matches)
         }
 
         if (completeMatches.size == 1) {

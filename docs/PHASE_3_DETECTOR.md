@@ -8,14 +8,20 @@ depends exclusively on `SanitizedNodeTree`; it does not receive
 change service behavior. Wiring decisions into the event/action state machine
 belongs to Phase 4.
 
-Rule set 1 supports only YouTube `21.35.442` (`1561295275`) and sanitized-tree
-schema 1. Both version name and version code must match. This intentionally
-avoids assuming that YouTube resource identifiers remain stable across app
-updates.
+Rule set 1 was discovered and validated on YouTube `21.35.442` (`1561295275`)
+and requires sanitized-tree schema 1. As of the product decision on 12 September
+2026, YouTube version name and code are recorded for diagnostics but do not gate
+classification. The compound structural rule is attempted on every official
+YouTube version.
+
+This deliberately prioritizes continued blocking across minor YouTube patches.
+It does not claim that unobserved versions are guaranteed compatible. If
+YouTube changes the relevant structure, the detector still fails open unless
+the complete signature matches.
 
 ## Results
 
-- `ConfirmedShorts`: exactly one complete compound reel signature exists and
+- `ConfirmedShorts`: exactly one complete core reel signature exists and
   no ordinary-playback veto exists.
 - `PossibleShorts`: some correctly typed reel evidence exists, but its required
   structure is incomplete or more than one complete candidate exists.
@@ -30,14 +36,17 @@ also non-actionable and may later help Phase 4 reset an encounter.
 
 ## Rule set 1
 
-Confirmation requires all of the following:
+Confirmation requires both of the following:
 
 1. `reel_recycler` is an
    `android.support.v7.widget.RecyclerView` with role `LIST`.
 2. `reel_player_page_container` is an `android.widget.FrameLayout` and a direct
    child of that reel list.
-3. `reel_playback_loading_spinner` is an `android.widget.ProgressBar` and a
-   sibling of that reel list.
+
+`reel_playback_loading_spinner`, when present as the expected
+`android.widget.ProgressBar` sibling, remains supporting diagnostic evidence.
+It is not required because it is a transient loading element that can disappear
+while the stable reel/player structure remains on screen.
 
 Any of these observed ordinary-playback resources vetoes confirmation:
 
@@ -71,10 +80,14 @@ an exit.
 Before applying a rule, the detector checks package identity, schema version,
 capture completeness, node-count/depth limits, unique non-negative indexes, one
 root, resolvable parents, parent-relative depth, and plausible child counts.
-Unsupported or ambiguous rule selection also fails open.
+Ambiguous rule selection also fails open. YouTube version metadata is not part
+of this gate.
 
 The local tests load the capture files from `captures/` as test resources, so a
 fixture change is exercised without maintaining a second copy. Synthetic tests
-then alter the structures to cover missing markers, wrong relationships,
+then alter the structures to cover missing core markers, an absent supporting
+spinner, wrong relationships,
 conflicting ordinary evidence, duplicate candidates, malformed trees, bounds,
-and version selection.
+rule selection, and identical classifications under arbitrary YouTube version
+metadata. The ordinary fixture suite is also rerun with unobserved version
+metadata to ensure it remains non-confirming.

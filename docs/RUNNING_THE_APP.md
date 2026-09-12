@@ -3,7 +3,7 @@
 This guide uses Android CLI, the Gradle wrapper, and `adb`; Android Studio is
 not required.
 
-## What the Phase 2 app does
+## What the Phase 4 app does
 
 The current app presents the accessibility disclosure and requires an explicit
 acknowledgement before it can open Android Accessibility Settings. After setup,
@@ -11,10 +11,22 @@ it reports whether the service is disabled, enabled, or paused, and provides a
 persistent pause control plus instructions for disabling access.
 
 The declared service receives only window-state and window-content events from
-the official YouTube package. Debug builds add an explicitly armed, one-shot
-structural inspector. It cannot read text or content descriptions and does not
-record bounds, screenshots, media, or user activity history. Release builds do
-not contain the inspector or export UI. No build performs Back actions yet.
+the official YouTube package. It coalesces events, sanitizes one fresh tree,
+and clicks YouTube's own Home tab only after the structural detector confirms
+Shorts.
+YouTube version metadata is retained for diagnostics but does not disable the
+rule. The service verifies the result and remains active for future confirmed
+encounters until paused or disabled. Inconclusive retries wait for later
+YouTube events, so continued operation does not introduce continuous polling.
+
+The status screen warns that YouTube updates can stop blocking or interfere
+with normal YouTube use. If that occurs, report the bug and disable ShortStop in
+Android Accessibility settings.
+
+Debug builds also provide the explicitly armed, one-shot structural inspector.
+It cannot read text or content descriptions and does not record bounds,
+screenshots, media, or user activity history. Release builds do not contain the
+inspector or export UI.
 
 ## 1. Verify the toolchain and device
 
@@ -98,7 +110,7 @@ visible and the Accessibility Settings button is disabled until acknowledgement.
 It also confirms the application is foregrounded using UI Automator. Emulator
 startup is not managed by this task; start or connect the device first.
 
-## 6. Verify the Phase 1 flow manually
+## 6. Verify the Phase 4 flow manually
 
 1. Start from a clean install and confirm the settings button is initially
    disabled.
@@ -111,8 +123,19 @@ startup is not managed by this task; start or connect the device first.
    return. Confirm the app reports that access is off.
 6. Repeat the UI review in light and dark theme, portrait and landscape, and at
    the largest supported display and font settings.
-7. Open YouTube and confirm this Phase 1 build never presses Back or otherwise
-   navigates, whether ShortStop is enabled or paused.
+7. With ShortStop resumed, open each completed Shorts entry path documented in
+   `TESTING.md`. Confirm that YouTube's Home tab is selected promptly only after
+   the completed Shorts viewer appears.
+8. Exercise regular playback, full-screen playback, a short ordinary video,
+   picture-in-picture, search autoplay, loading screens, and ordinary
+   navigation. Confirm none causes a Home-tab click.
+9. Pause ShortStop and confirm a completed Shorts screen causes no action.
+10. Repeat confirmed Shorts entry many times and confirm each encounter returns
+    to YouTube's Home tab; ShortStop must not stop after any fixed number of
+    actions.
+11. Exercise a persistent or rapidly repeated Shorts case. Confirm retries occur
+    only after later YouTube events and fresh confirmation, with no continuous
+    navigation loop, and confirm the cooldown does not eject ordinary screens.
 
 ## Useful commands
 

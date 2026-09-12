@@ -11,7 +11,7 @@ Tests must cover ordinary viewing more broadly than the happy-path Shorts case.
 - Exact, partial, conflicting, and absent detector signals
 - Signature schema/version behavior
 - Detection confidence rules
-- Ejection-state transitions, retry limit, and cooldown
+- Ejection-state transitions, event-driven retry behavior, and cooldown
 - Pause/resume behavior
 - Malformed, excessively deep, and excessively wide trees
 
@@ -31,15 +31,24 @@ captures to be rejected, and assert that every other ordinary or transitional
 capture remains non-confirmed. Synthetic cases cover each missing marker,
 broken hierarchy, an ordinary-layout conflict, duplicate complete signatures,
 truncation, excessive node count, malformed indexes/parents/depth, schema and
-package mismatch, exact YouTube version-name/code selection, and ambiguous rule
-selection.
+package mismatch, YouTube-version independence, and ambiguous rule selection.
+The ordinary fixture matrix is repeated with arbitrary unobserved version
+metadata so removing the version gate cannot itself create confirmations.
+
+Phase 4 local tests cover event coalescing, confirmation, YouTube Home-tab click
+acceptance and rejection, verification timing, ordinary-layout cooldown,
+inconclusive verification, reset behavior, and repeated confirmed encounters
+without an action ceiling. They also cover the one bounded retry when an event
+arrives during verification, including proof that it cannot become a timer-only
+loop. Resolver tests cover the first-tab structure in both positive fixtures
+and fail-open behavior for missing or unsafe targets. A Compose device test
+checks the persistent compatibility warning.
 
 ### Instrumented tests
 
 - Accessibility service lifecycle and settings-state detection
 - Package gating
 - DataStore persistence
-- Overlay display and dismissal
 - Process recreation and activity lifecycle
 - Material 3 screen behavior in light and dark themes
 - Scalable text, semantic labels, minimum touch targets, edge-to-edge insets,
@@ -80,9 +89,9 @@ YouTube APKs to this repository.
 - Resume YouTube while it was previously displaying Shorts.
 - Move rapidly between Shorts and ordinary screens.
 
-Each case must exit within one second after a usable event, avoid repeated Back
-actions, and leave the user in a predictable previous screen or manual-exit
-state.
+Each case must reach YouTube's Home tab within one second after a usable event.
+A persistent confirmed case may trigger that tab again only after a later eligible
+YouTube event and fresh confirmation; it must not create a polling loop.
 
 ## Ordinary YouTube false-positive suite
 
@@ -126,5 +135,5 @@ Record for each candidate:
 - Median and worst observed response time
 - Known unsupported layouts
 
-Any false exit, unbounded retry, collected content, or unexplained background
+Any false exit, timer-driven retry loop, collected content, or unexplained background
 activity blocks release.
