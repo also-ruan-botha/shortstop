@@ -12,7 +12,7 @@ The prototype succeeds when it:
 - exits a confirmed Shorts screen within one second of a usable accessibility
   event;
 - causes zero false exits in the defined 100-action ordinary-YouTube test run;
-- avoids action loops and stops after two unsuccessful Back actions;
+- avoids action loops while remaining available for later confirmed encounters;
 - performs all classification locally and requests only accessibility access;
 - fails open after an unrecognized YouTube layout change.
 
@@ -63,7 +63,7 @@ persisted pause preference, and performs no automatic accessibility action.
 1. Add an onboarding screen explaining:
    - what ShortStop observes;
    - that it reacts only inside YouTube;
-   - that it presses Back after detecting Shorts;
+   - that it selects YouTube's Home tab after detecting Shorts;
    - that no screen content leaves the device;
    - how to disable access.
 2. Require an explicit acknowledgement before opening Android Accessibility
@@ -117,12 +117,15 @@ available test versions, stop rather than implementing speculative actions.
 
 ## Phase 3: detector engine
 
-Status as of 8 September 2026: complete for tested YouTube version `21.35.442`.
-Rule set 1 requires the full compound reel signature discovered in Phase 2,
-applies explicit ordinary-playback vetoes, and fails open for all partial,
-malformed, truncated, ambiguous, unsupported-version, or otherwise unknown
-trees. All 13 captures and synthetic boundary cases are covered by local unit
-tests. See [PHASE_3_DETECTOR.md](PHASE_3_DETECTOR.md).
+Status as of 12 September 2026: complete. Rule set 1 requires the typed reel
+list and its direct typed player-page child discovered on YouTube `21.35.442`;
+the transient loading spinner is supporting rather than required evidence. It
+applies explicit ordinary-playback vetoes and fails open for malformed,
+truncated, ambiguous, or otherwise unknown trees. By product-owner decision, installed
+YouTube version metadata no longer gates the rule: the same structural rule is
+attempted across versions. All 13 captures, arbitrary-version metadata, and
+synthetic boundary cases are covered by local unit tests. See
+[PHASE_3_DETECTOR.md](PHASE_3_DETECTOR.md).
 
 1. Define the sanitized node model and these results:
    `NotShorts`, `PossibleShorts`, `ConfirmedShorts`, and `UnknownLayout`.
@@ -134,7 +137,7 @@ tests. See [PHASE_3_DETECTOR.md](PHASE_3_DETECTOR.md).
 5. Create fixtures for every observed Shorts entry path and representative
    ordinary surfaces.
 6. Unit-test traversal limits, malformed trees, missing nodes, partial trees,
-   ambiguous matches, and signature-version selection.
+   ambiguous matches, and independence from YouTube version metadata.
 
 Exit gate: all fixtures classify as expected, and no ordinary fixture reaches
 `ConfirmedShorts`.
@@ -146,21 +149,36 @@ and no ordinary fixture reaches `ConfirmedShorts`.
 
 ## Phase 4: action state machine
 
+Status as of 12 September 2026: implementation updated; manual device exit
+gate pending. The pure state machine, service integration, one-shot
+classification/verification scheduling, unlimited event-driven encounters,
+cooldown, and runtime status are implemented and covered by local and Compose
+UI tests. See
+[PHASE_4_ACTION_STATE_MACHINE.md](PHASE_4_ACTION_STATE_MACHINE.md).
+
 Implement these states:
 
 1. `Monitoring`: inspect eligible YouTube events.
 2. `Suspected`: coalesce rapid events and request one fresh tree.
-3. `Ejecting`: issue one `GLOBAL_ACTION_BACK` for a confirmed screen.
+3. `Ejecting`: click YouTube's own bottom-navigation Home tab for a confirmed
+   screen.
 4. `Verifying`: wait briefly for the resulting window event and reclassify.
 5. `Cooldown`: suppress duplicate actions for the same encounter.
-6. `NeedsUserExit`: after two unsuccessful Back actions, stop automation and
-   offer an accessibility overlay with Leave YouTube and Pause controls.
 
-Do not issue Home automatically. Reset encounter state after YouTube leaves the
-foreground or a non-Shorts layout is confirmed.
+Keep monitoring until the user pauses ShortStop or disables its accessibility
+access. A failed or inconclusive Home-tab click waits for a later eligible
+YouTube event before reclassification; it must not create a polling or action
+loop. If an eligible event arrives during post-click verification and the
+fresh verification still confirms Shorts, permit one immediate bounded retry
+so a rapid re-entry is not lost.
+Reset encounter state after YouTube leaves the foreground or a non-Shorts
+layout is confirmed.
 
 Exit gate: all defined entry paths exit correctly without loops or unrelated
 navigation.
+
+The exit gate remains open until the project owner verifies the defined Shorts
+entry paths and ordinary-navigation matrix on the supported physical device.
 
 ## Phase 5: hardening and validation
 
@@ -197,5 +215,5 @@ YouTube detector is proven:
 - Screenshots, OCR, or image recognition
 - Remote rule delivery in the prototype
 - User accounts, cloud sync, analytics, and advertising
-- Automatic Home action or attempts to disable parts of YouTube's UI
+- Attempts to disable parts of YouTube's UI
 - iOS parity claims

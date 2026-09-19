@@ -63,9 +63,9 @@ The narrowed high-confidence candidate consists of two required signal groups:
 2. **Reel loading context:** `reel_playback_loading_spinner` is a ProgressBar
    sibling of that reel list under the same coordinator.
 
-Initially requiring both groups means all three named nodes and both structural
-relationships must agree. No individual resource identifier should trigger an
-action by itself. A missing or reshaped marker must fail open.
+Phase 2 initially proposed requiring both groups, meaning all three named nodes
+and both structural relationships had to agree. No individual resource
+identifier was sufficient on its own.
 
 The regular, full-screen, and loading ordinary-playback captures contain
 `next_gen_watch_layout_no_player_fragment_container`. Regular playback contains
@@ -105,8 +105,21 @@ playback, a short ordinary video, picture-in-picture, search autoplay, and
 loading states. The Phase 2 evidence gate is therefore complete for this
 version.
 
-Phase 3 rules must remain versioned, require the complete compound signature,
+Phase 3 rules must remain versioned, require a compound structural signature,
 and classify the captured Shorts-loading state without action. Continue adding
 negative fixtures whenever new look-alike surfaces are found. A second
 available YouTube version must be evaluated independently; these resource
 identifiers are not assumed to be stable across versions.
+
+Product decision recorded 12 September 2026: the rule remains internally
+versioned and its observed YouTube version remains recorded, but the installed
+YouTube version is no longer an applicability gate. Phase 3 now attempts the
+same compound structural rule on every YouTube version. This prioritizes
+continued functionality across minor patches while retaining all structural
+confirmation requirements and ordinary-playback vetoes.
+
+Product decision recorded 12 September 2026 after rapid-entry device testing:
+the stable typed reel-list/direct-player relationship is the required core
+signature. The loading-spinner sibling is transient and is now supporting,
+rather than mandatory, evidence. All captured ordinary surfaces still lack the
+core relationship, and the ordinary-playback vetoes remain unchanged.

@@ -8,7 +8,11 @@ class ServiceStatusTest {
     fun disabledTakesPrecedence() {
         assertEquals(
             ServiceStatus.DISABLED,
-            serviceStatus(serviceEnabled = false, paused = true, unsupportedLayout = true),
+            serviceStatus(
+                serviceEnabled = false,
+                paused = true,
+                automationStatus = AutomationStatus.UNSUPPORTED_LAYOUT,
+            ),
         )
     }
 
@@ -16,7 +20,11 @@ class ServiceStatusTest {
     fun pausedTakesPrecedenceOverUnsupportedLayout() {
         assertEquals(
             ServiceStatus.PAUSED,
-            serviceStatus(serviceEnabled = true, paused = true, unsupportedLayout = true),
+            serviceStatus(
+                serviceEnabled = true,
+                paused = true,
+                automationStatus = AutomationStatus.UNSUPPORTED_LAYOUT,
+            ),
         )
     }
 
@@ -24,7 +32,11 @@ class ServiceStatusTest {
     fun enabledServiceCanReportUnsupportedLayout() {
         assertEquals(
             ServiceStatus.UNSUPPORTED_LAYOUT,
-            serviceStatus(serviceEnabled = true, paused = false, unsupportedLayout = true),
+            serviceStatus(
+                serviceEnabled = true,
+                paused = false,
+                automationStatus = AutomationStatus.UNSUPPORTED_LAYOUT,
+            ),
         )
     }
 
@@ -32,7 +44,11 @@ class ServiceStatusTest {
     fun enabledIsTheActiveDefault() {
         assertEquals(
             ServiceStatus.ENABLED,
-            serviceStatus(serviceEnabled = true, paused = false, unsupportedLayout = false),
+            serviceStatus(
+                serviceEnabled = true,
+                paused = false,
+                automationStatus = AutomationStatus.MONITORING,
+            ),
         )
     }
 }

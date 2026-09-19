@@ -54,7 +54,7 @@ internal class AccessibilityTreeReader(
                 try {
                     visit(child, parentIndex = index, depth = depth + 1)
                 } finally {
-                    recycleIfRequired(child)
+                    recycleNodeIfRequired(child)
                 }
             }
         }
@@ -70,14 +70,14 @@ internal class AccessibilityTreeReader(
             null
         }
 
-    @Suppress("DEPRECATION")
-    private fun recycleIfRequired(node: AccessibilityNodeInfo) {
-        if (Build.VERSION.SDK_INT < 33) node.recycle()
-    }
-
     private companion object {
         const val DEFAULT_MAX_NODES = 1_000
         const val DEFAULT_MAX_DEPTH = 40
         const val DEFAULT_MAX_CHILDREN_PER_NODE = 100
     }
+}
+
+@Suppress("DEPRECATION")
+internal fun recycleNodeIfRequired(node: AccessibilityNodeInfo) {
+    if (Build.VERSION.SDK_INT < 33) node.recycle()
 }

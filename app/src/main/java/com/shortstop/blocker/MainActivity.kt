@@ -68,6 +68,11 @@ class MainActivity : ComponentActivity() {
                     )
             }
         }
+        lifecycleScope.launch {
+            AutomationRuntime.status.collect { status ->
+                uiState = uiState.copy(automationStatus = status)
+            }
+        }
 
         setContent {
             ShortStopTheme {
@@ -119,7 +124,7 @@ internal data class ShortStopUiState(
     val disclosureChecked: Boolean = false,
     val serviceEnabled: Boolean = false,
     val paused: Boolean = false,
-    val unsupportedLayout: Boolean = false,
+    val automationStatus: AutomationStatus = AutomationStatus.MONITORING,
 )
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -233,7 +238,7 @@ private fun DisclosureCard() {
                 style = MaterialTheme.typography.titleLarge,
             )
             Text(
-                "When blocking is active, ShortStop examines the structure of YouTube’s on-screen interface only while YouTube is active. After it confidently detects Shorts, it presses Back."
+                "When blocking is active, ShortStop examines the structure of YouTube’s on-screen interface only while YouTube is active. After it confidently detects Shorts, it selects YouTube’s own Home tab so you stay in YouTube. It keeps monitoring future YouTube sessions until you pause or disable it."
             )
             HorizontalDivider()
             Text(
@@ -256,7 +261,7 @@ private fun StatusScreen(
         serviceStatus(
             serviceEnabled = state.serviceEnabled,
             paused = state.paused,
-            unsupportedLayout = state.unsupportedLayout,
+            automationStatus = state.automationStatus,
         )
     Column(
         modifier =
@@ -277,6 +282,7 @@ private fun StatusScreen(
                 Text("Enable in Accessibility settings")
             }
         }
+        CompatibilityNotice()
         DiscoveryPanel(serviceEnabled = state.serviceEnabled, paused = state.paused)
         Surface(
             modifier = Modifier.fillMaxWidth(),
@@ -307,6 +313,29 @@ private fun StatusScreen(
             modifier = Modifier.heightIn(min = 48.dp),
         ) {
             Text("Open Accessibility settings")
+        }
+    }
+}
+
+@Composable
+internal fun CompatibilityNotice() {
+    Surface(
+        modifier = Modifier.fillMaxWidth(),
+        shape = MaterialTheme.shapes.large,
+        color = MaterialTheme.colorScheme.tertiaryContainer,
+    ) {
+        Column(
+            modifier = Modifier.padding(20.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            Text(
+                text = "YouTube compatibility can change",
+                modifier = Modifier.semantics { heading() },
+                style = MaterialTheme.typography.titleLarge,
+            )
+            Text(
+                "ShortStop relies on YouTube’s interface structure. YouTube updates may cause blocking to stop working or may interfere with normal use. If YouTube does not work correctly after installing or enabling ShortStop, report the bug and disable ShortStop in Accessibility settings."
+            )
         }
     }
 }

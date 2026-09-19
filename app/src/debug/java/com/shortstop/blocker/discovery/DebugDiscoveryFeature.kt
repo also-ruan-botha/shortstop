@@ -2,8 +2,6 @@ package com.shortstop.blocker.discovery
 
 import android.accessibilityservice.AccessibilityService
 import android.content.Context
-import android.content.pm.PackageInfo
-import android.content.pm.PackageManager
 import android.os.Build
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -165,35 +163,36 @@ private object DebugDiscoveryRuntime : DiscoveryServiceBridge {
     }
 
     private fun captureMetadata(context: Context): CaptureMetadata {
-        val packageInfo = context.packageManager.youtubePackageInfo()
+        val packageInfo =
+            try {
+                if (Build.VERSION.SDK_INT >= 33) {
+                    context.packageManager.getPackageInfo(
+                        YOUTUBE_PACKAGE,
+                        android.content.pm.PackageManager.PackageInfoFlags.of(0),
+                    )
+                } else {
+                    @Suppress("DEPRECATION")
+                    context.packageManager.getPackageInfo(YOUTUBE_PACKAGE, 0)
+                }
+            } catch (_: android.content.pm.PackageManager.NameNotFoundException) {
+                null
+            }
         return CaptureMetadata(
             capturedAtUtc = Instant.now().toString(),
             targetPackage = YOUTUBE_PACKAGE,
             targetVersionName = packageInfo?.versionName ?: "unknown",
-            targetVersionCode = packageInfo?.safeLongVersionCode() ?: -1,
+            targetVersionCode =
+                packageInfo?.let {
+                    if (Build.VERSION.SDK_INT >= 28) it.longVersionCode
+                    else {
+                        @Suppress("DEPRECATION") it.versionCode.toLong()
+                    }
+                } ?: -1,
             androidRelease = Build.VERSION.RELEASE,
             androidSdk = Build.VERSION.SDK_INT,
         )
     }
 
-    @Suppress("DEPRECATION")
-    private fun PackageManager.youtubePackageInfo(): PackageInfo? =
-        try {
-            if (Build.VERSION.SDK_INT >= 33) {
-                getPackageInfo(YOUTUBE_PACKAGE, PackageManager.PackageInfoFlags.of(0))
-            } else {
-                getPackageInfo(YOUTUBE_PACKAGE, 0)
-            }
-        } catch (_: PackageManager.NameNotFoundException) {
-            null
-        }
-
-    @Suppress("DEPRECATION")
-    private fun PackageInfo.safeLongVersionCode(): Long =
-        if (Build.VERSION.SDK_INT >= 28) longVersionCode else versionCode.toLong()
-
-    @Suppress("DEPRECATION")
-    private fun recycleRootIfRequired(root: android.view.accessibility.AccessibilityNodeInfo) {
-        if (Build.VERSION.SDK_INT < 33) root.recycle()
-    }
+    private fun recycleRootIfRequired(root: android.view.accessibility.AccessibilityNodeInfo) =
+        recycleNodeIfRequired(root)
 }

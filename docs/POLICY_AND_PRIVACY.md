@@ -12,7 +12,8 @@ classification merely to simplify review. A public release should:
 - provide a prominent in-app disclosure before opening system settings;
 - obtain affirmative acknowledgement of the disclosure;
 - explain that the service reads the structural interface of YouTube and
-  presses Back when it recognizes the Shorts screen;
+  selects YouTube's own Home tab when it recognizes the Shorts screen and remains active
+  for future encounters until paused or disabled;
 - state that processing is local and screen content is not collected or
   transmitted;
 - demonstrate the deterministic, narrow, user-understood behavior in the
@@ -32,11 +33,23 @@ The final copy requires policy/legal review, but the implementation should be
 designed around language equivalent to:
 
 > ShortStop uses Android Accessibility access to recognize when the official
-> YouTube app is displaying Shorts and to press Back automatically. It examines
+> YouTube app is displaying Shorts and to select YouTube's own Home tab automatically. It examines
 > YouTube's on-screen interface structure only while YouTube is active. It does
 > not capture screenshots, record what you watch or type, or send accessibility
 > data off your device. You can pause ShortStop here or disable its access at
 > any time in Android Settings.
+
+The implemented disclosure additionally explains that monitoring continues
+until the user pauses ShortStop or disables its accessibility access. The tab is
+performed only after the detector confirms the full structural Shorts
+signature; partial and unknown layouts remain non-actionable.
+
+The status screen also carries a persistent compatibility warning. It explains
+that YouTube interface changes may stop blocking or interfere with normal use,
+and tells the user to report the bug and disable ShortStop in Accessibility
+settings if that happens. This warning reflects the deliberate decision to
+attempt the structural rule across unobserved YouTube versions rather than
+disabling functionality solely because version metadata changed.
 
 Place this disclosure immediately before the affirmative control that opens
 Accessibility Settings. Do not hide it only in a privacy policy.

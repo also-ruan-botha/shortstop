@@ -7,8 +7,7 @@ internal enum class ServiceStatus(val heading: String, val description: String) 
     ),
     ENABLED(
         heading = "ShortStop is enabled",
-        description =
-            "The service is connected. Automatic detection and navigation are not active yet.",
+        description = "ShortStop is monitoring supported YouTube layouts on this device.",
     ),
     PAUSED(
         heading = "ShortStop is paused",
@@ -25,11 +24,11 @@ internal enum class ServiceStatus(val heading: String, val description: String) 
 internal fun serviceStatus(
     serviceEnabled: Boolean,
     paused: Boolean,
-    unsupportedLayout: Boolean,
+    automationStatus: AutomationStatus,
 ): ServiceStatus =
     when {
         !serviceEnabled -> ServiceStatus.DISABLED
         paused -> ServiceStatus.PAUSED
-        unsupportedLayout -> ServiceStatus.UNSUPPORTED_LAYOUT
+        automationStatus == AutomationStatus.UNSUPPORTED_LAYOUT -> ServiceStatus.UNSUPPORTED_LAYOUT
         else -> ServiceStatus.ENABLED
     }

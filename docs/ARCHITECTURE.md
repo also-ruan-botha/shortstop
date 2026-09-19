@@ -21,7 +21,7 @@ Android accessibility events
  DetectionDecision
           |
           v
- EjectionStateMachine -----> Back action / cooldown / user overlay
+ EjectionStateMachine -----> YouTube Home-tab click / verification / cooldown
 ```
 
 The Compose application is a configuration and status surface. The Android
@@ -76,7 +76,8 @@ The manifest and service metadata limit delivery to window-state and
 window-content events from `com.google.android.youtube`; the callback repeats
 the package and pause gates. In debug builds, an explicitly armed discovery
 bridge may consume the next eligible event and read one tree. In release builds
-that bridge is a no-op. Phase 4 is the first phase permitted to add Back.
+that bridge is a no-op. Phase 4 is the first phase permitted to add an
+automatic navigation action.
 
 ### Debug discovery flow
 
@@ -125,26 +126,52 @@ Confirmation requires multiple independent markers. Rules may recognize a
 known layout but must not infer Shorts merely because a video is vertical,
 brief, full-screen, or swipeable.
 
-Rule set 1 is bound to both the observed YouTube version name `21.35.442` and
-version code `1561295275`. It requires a typed reel list, its direct typed
-player-page child, and a typed loading-spinner sibling. Recognized watch-layout
-resources veto confirmation. Exactly one complete reel structure is required;
-duplicates are ambiguous and non-actionable.
+Rule set 1 was observed on YouTube version name `21.35.442` and version code
+`1561295275`, but those values are diagnostic evidence rather than an
+applicability gate. The rule is evaluated for every installed official YouTube
+version. It requires a typed reel list and its direct typed player-page child.
+The typed loading-spinner sibling is recorded as supporting evidence but is not
+required because device testing showed that transient state could cause missed
+detections. Recognized watch-layout resources veto confirmation. Exactly one
+complete core reel structure is required; duplicates are ambiguous and
+non-actionable.
 
-`NotShorts` means a versioned ordinary-playback structure was positively
-recognized. A known-version tree with neither ordinary nor reel evidence is
-`UnknownLayout`, not `NotShorts`. `PossibleShorts` records partial or ambiguous
-reel evidence for later reconsideration but cannot authorize an action.
+`NotShorts` means an ordinary-playback structure was positively recognized. A
+tree with neither ordinary nor reel evidence is `UnknownLayout`, not
+`NotShorts`. `PossibleShorts` records partial or ambiguous reel evidence for
+later reconsideration but cannot authorize an action.
 
 ### Ejection state machine
 
-The state machine controls timing and prevents loops. One confirmed encounter
-permits at most two Back actions. A cooldown absorbs the burst of accessibility
-events produced by navigation.
+The pure `EjectionStateMachine` controls timing and prevents loops. A 150 ms
+one-shot delay coalesces event bursts before reading one fresh tree. A confirmed
+screen permits one click on YouTube's Home tab followed by one 400 ms
+verification read. A 1.5 second cooldown follows positively recognized ordinary
+playback after an attempted exit.
 
-If Back cannot exit, automation stops for that encounter. A user-controlled
-accessibility overlay may then offer a manual exit or temporary pause. The
-overlay must not mimic YouTube or cover unrelated applications.
+There is no lifetime or encounter action-count ceiling: ShortStop remains
+available for later confirmed Shorts until the user pauses it or disables the
+service. If an eligible event arrives during the 400 ms verification window and
+the fresh verification still confirms Shorts, the state machine permits one
+immediate bounded Home-tab retry. This closes the event-loss race caused by
+rapid re-entry. After that retry, or when no event was observed, it schedules no
+continuous work and waits for a later eligible YouTube event. Every later click
+still requires a fresh confirmed tree. This preserves indefinite operation
+without a timer-driven action loop.
+
+### YouTube Home action
+
+`YoutubeHomeActionExecutor` is separate from both the detector and the state
+machine. Immediately before a click, it obtains a fresh root, verifies that the
+active package is YouTube, sanitizes and confirms that tree again, and asks the
+pure `YoutubeHomeTargetResolver` for an unambiguous target.
+
+The first action rule is based on both positive Phase 2 fixtures. It requires
+one `pivot_bar` horizontal scroll container with one direct five-item linear tab
+row. The first item must be an enabled, visible, clickable Android button. The
+framework executor repeats these structural checks and performs `ACTION_CLICK`
+on that first item. It never reads navigation labels, text, or content
+descriptions. If any target condition changes, the action fails open.
 
 ### Rule repository
 
@@ -175,10 +202,12 @@ information remains.
 - Missing root: ignore the event.
 - Partial or truncated tree: return `UnknownLayout`; a structurally complete
   but partial reel signature returns non-actionable `PossibleShorts`.
-- Unknown YouTube version: return `UnknownLayout`; no current signature is
-  treated as generic across versions.
-- Back action rejected: retry only after reclassification and never more than
-  twice.
+- Unknown or newly patched YouTube version: evaluate the bundled structural
+  rule normally. Version metadata alone never changes a classification.
+- Changed YouTube structure: return `PossibleShorts` or `UnknownLayout` unless
+  the complete core signature still matches.
+- YouTube Home-tab click rejected or inconclusive: retry only after a later eligible event
+  and fresh confirmation; do not poll continuously.
 - Rapid repeated events: coalesce and enforce cooldown.
 - Permission removed: clear state and show disabled status next time the app
   opens.
@@ -188,7 +217,7 @@ information remains.
 ## iOS limitation
 
 iOS does not expose another application's accessibility hierarchy or permit a
-third-party app to issue an equivalent cross-application Back action. The core
+third-party app to issue an equivalent cross-application navigation action. The core
 behavior is therefore Android-specific. Any future iOS product would need a
 different, more limited definition, such as Safari URL blocking or whole-app
 Screen Time controls.
