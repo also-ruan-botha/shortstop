@@ -25,6 +25,15 @@ content-description, bounds, and screenshot fields. Device review must also
 exercise missing roots, truncation indicators, repeated event bursts after one
 arm action, local export failure, and release-build absence of discovery UI.
 
+Phase 3 local tests load the 13 Phase 2 captures directly. They require both
+completed Shorts captures to be confirmed, require explicit watch-layout
+captures to be rejected, and assert that every other ordinary or transitional
+capture remains non-confirmed. Synthetic cases cover each missing marker,
+broken hierarchy, an ordinary-layout conflict, duplicate complete signatures,
+truncation, excessive node count, malformed indexes/parents/depth, schema and
+package mismatch, exact YouTube version-name/code selection, and ambiguous rule
+selection.
+
 ### Instrumented tests
 
 - Accessibility service lifecycle and settings-state detection

@@ -117,6 +117,13 @@ available test versions, stop rather than implementing speculative actions.
 
 ## Phase 3: detector engine
 
+Status as of 8 September 2026: complete for tested YouTube version `21.35.442`.
+Rule set 1 requires the full compound reel signature discovered in Phase 2,
+applies explicit ordinary-playback vetoes, and fails open for all partial,
+malformed, truncated, ambiguous, unsupported-version, or otherwise unknown
+trees. All 13 captures and synthetic boundary cases are covered by local unit
+tests. See [PHASE_3_DETECTOR.md](PHASE_3_DETECTOR.md).
+
 1. Define the sanitized node model and these results:
    `NotShorts`, `PossibleShorts`, `ConfirmedShorts`, and `UnknownLayout`.
 2. Implement versioned declarative signatures using resource IDs, roles,
@@ -131,6 +138,11 @@ available test versions, stop rather than implementing speculative actions.
 
 Exit gate: all fixtures classify as expected, and no ordinary fixture reaches
 `ConfirmedShorts`.
+
+Exit result: both completed Shorts fixtures reach `ConfirmedShorts`; five
+ordinary playback fixtures reach `NotShorts`; the remaining five ordinary
+navigation fixtures and the Shorts-loading transition reach `UnknownLayout`;
+and no ordinary fixture reaches `ConfirmedShorts`.
 
 ## Phase 4: action state machine
 

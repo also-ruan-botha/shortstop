@@ -33,6 +33,7 @@ internal data class SanitizedNodeTree(
     val metadata: CaptureMetadata,
     val nodes: List<SanitizedNode>,
     val truncated: Boolean,
+    val schemaVersion: Int = SANITIZED_TREE_SCHEMA_VERSION,
 )
 
 internal enum class NodeRole {

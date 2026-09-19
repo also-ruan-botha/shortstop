@@ -125,6 +125,17 @@ Confirmation requires multiple independent markers. Rules may recognize a
 known layout but must not infer Shorts merely because a video is vertical,
 brief, full-screen, or swipeable.
 
+Rule set 1 is bound to both the observed YouTube version name `21.35.442` and
+version code `1561295275`. It requires a typed reel list, its direct typed
+player-page child, and a typed loading-spinner sibling. Recognized watch-layout
+resources veto confirmation. Exactly one complete reel structure is required;
+duplicates are ambiguous and non-actionable.
+
+`NotShorts` means a versioned ordinary-playback structure was positively
+recognized. A known-version tree with neither ordinary nor reel evidence is
+`UnknownLayout`, not `NotShorts`. `PossibleShorts` records partial or ambiguous
+reel evidence for later reconsideration but cannot authorize an action.
+
 ### Ejection state machine
 
 The state machine controls timing and prevents loops. One confirmed encounter
@@ -162,10 +173,10 @@ information remains.
 ## Failure behavior
 
 - Missing root: ignore the event.
-- Partial tree: return `UnknownLayout` unless high-confidence requirements are
-  still satisfied.
-- Unknown YouTube version: apply proven generic structural rules, otherwise
-  fail open.
+- Partial or truncated tree: return `UnknownLayout`; a structurally complete
+  but partial reel signature returns non-actionable `PossibleShorts`.
+- Unknown YouTube version: return `UnknownLayout`; no current signature is
+  treated as generic across versions.
 - Back action rejected: retry only after reclassification and never more than
   twice.
 - Rapid repeated events: coalesce and enforce cooldown.
